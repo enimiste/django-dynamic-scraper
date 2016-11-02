@@ -83,6 +83,7 @@ class Scraper(models.Model):
         ('N', 'NONE'),
         ('R', 'RANGE_FUNCT'),
         ('F', 'FREE_LIST'),
+        ('X', 'XPATH'),
     )
     name = models.CharField(max_length=200)
     scraped_obj_class = models.ForeignKey(ScrapedObjClass)
@@ -90,6 +91,7 @@ class Scraper(models.Model):
     max_items_read = models.IntegerField(blank=True, null=True, help_text="Max number of items to be read (empty: unlimited).")
     max_items_save = models.IntegerField(blank=True, null=True, help_text="Max number of items to be saved (empty: unlimited).")
     pagination_type = models.CharField(max_length=1, choices=PAGINATION_TYPE, default='N')
+    pagination_xpath = models.CharField(max_length=255, default='', help_text="This xpath should returns a list of href values to follow")
     pagination_on_start = models.BooleanField(default=False)
     pagination_append_str = models.CharField(max_length=200, blank=True, help_text="Syntax: /somepartofurl/{page}/moreurlstuff.html")
     pagination_page_replace = models.TextField(blank=True, 

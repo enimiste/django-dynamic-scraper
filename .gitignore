@@ -17,3 +17,12 @@ MANIFEST
 dist
 build
 docs/_build
+lib
+bin
+.idea
+.Python
+pip-selfcheck.json
+python2.7
+change_list.html
+confirm_rate_limit.html
+style.css
