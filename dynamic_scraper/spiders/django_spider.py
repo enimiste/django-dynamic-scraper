@@ -30,6 +30,7 @@ class DjangoSpider(DjangoBaseSpider):
     dp_form_data = {}
     tmp_non_db_results = {}
     non_db_results = {}
+    processed_pagination_urls = []
 
     current_output_num_mp_response_bodies = 0
     current_output_num_dp_response_bodies = 0
@@ -504,9 +505,10 @@ class DjangoSpider(DjangoBaseSpider):
 
             if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '':
                 links = xs.xpath(self.scraper.pagination_xpath).extract()
-                for link in links:
+                for link in ( l for l in links if l not in self.processed_pagination_urls):
+                    self.processed_pagination_urls.append(link)
                     link = response.urljoin(link)
-                    self.log("Pagination ==> Next link to follow : %s" % link, logging.INFO)
+                    self.log("Pagination [%s] ==> Next link to follow : %s" % (self.processed_pagination_urls.count(), link), logging.INFO)
                     yield Request(response.urljoin(link), callback=self.parse_item, method='GET', dont_filter=False)
 
     def _post_save_tasks(self, sender, instance, created, **kwargs):
