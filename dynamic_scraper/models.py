@@ -140,7 +140,7 @@ class Scraper(models.Model):
         return self.requestpagetype_set.get(page_type='MP')
 
     def get_detail_page_rpts(self):
-        return s.requestpagetype_set.filter(~Q(page_type='MP'))
+        return self.requestpagetype_set.filter(~Q(page_type='MP'))
 
     def get_rpt(self, page_type):
         return self.requestpagetype_set.get(page_type=page_type)

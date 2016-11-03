@@ -6,7 +6,7 @@ import datetime, json, logging, os
 from jsonpath_rw import jsonpath, parse
 from jsonpath_rw.lexer import JsonPathLexerError
 
-from scrapy import signals
+from scrapy import signals, FormRequest
 from scrapy.exceptions import CloseSpider
 from scrapy.http import Request
 from pydispatch import dispatcher
