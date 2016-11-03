@@ -1,4 +1,4 @@
-#Stage 2 Update (Python 3)
+# Stage 2 Update (Python 3)
 from __future__ import unicode_literals
 from builtins import str
 from builtins import object
@@ -12,7 +12,6 @@ from dynamic_scraper.models import *
 
 
 class ScrapedObjAttrFormSet(BaseInlineFormSet):
-    
     def clean(self):
         super(ScrapedObjAttrFormSet, self).clean()
 
@@ -44,7 +43,8 @@ class ScrapedObjAttrFormSet(BaseInlineFormSet):
                     cnt_wrong_id_type += 1
 
         if cnt_type_b == 0:
-            raise ValidationError("For the scraped object class definition one object attribute of type BASE is required!")
+            raise ValidationError(
+                "For the scraped object class definition one object attribute of type BASE is required!")
         if cnt_type_b > 1:
             raise ValidationError("Only one object attribute of type BASE allowed!")
         if cnt_type_u > 25:
@@ -54,7 +54,6 @@ class ScrapedObjAttrFormSet(BaseInlineFormSet):
 
         if cnt_wrong_id_type > 0:
             raise ValidationError("Only STANDARD or DETAIL_PAGE_URL attributes can be defined as ID fields!")
-
 
 
 class ScrapedObjAttrInline(admin.TabularInline):
@@ -70,7 +69,6 @@ class ScrapedObjClassAdmin(admin.ModelAdmin):
 
 
 class RequestPageTypeFormSet(BaseInlineFormSet):
-    
     def clean(self):
         super(RequestPageTypeFormSet, self).clean()
 
@@ -95,29 +93,34 @@ class RequestPageTypeFormSet(BaseInlineFormSet):
                 cnt_rpts_dp += 1
 
         if cnt_rpts_mp == 0:
-            raise ValidationError("For every request page type used for scraper elems definition a RequestPageType object with a corresponding page type has to be added!")
+            raise ValidationError(
+                "For every request page type used for scraper elems definition a RequestPageType object with a corresponding page type has to be added!")
         if cnt_rpts_mp > 1:
             raise ValidationError("Only one RequestPageType object for main page requests allowed!")
+
 
 class RequestPageTypeInline(admin.StackedInline):
     model = RequestPageType
     formset = RequestPageTypeFormSet
     extra = 0
 
+
 class CheckerInline(admin.StackedInline):
     model = Checker
     extra = 0
+
 
 class ScraperElemInline(admin.TabularInline):
     model = ScraperElem
     extra = 3
 
-    
+
 class ScraperAdmin(admin.ModelAdmin):
     class Media(object):
         js = ("js/admin_custom.js",)
+
     list_display = ('id', 'name', 'scraped_obj_class', 'status', 'max_items_read', 'max_items_save', \
-        'pagination_type', 'rpts', 'checkers', 'last_scraper_save_', 'last_checker_delete_',)
+                    'pagination_type', 'rpts', 'checkers', 'last_scraper_save_', 'last_checker_delete_',)
     list_display_links = ('name',)
     list_editable = ('status',)
     list_filter = ('scraped_obj_class', 'status', 'pagination_type',)
@@ -130,10 +133,10 @@ class ScraperAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('name', 'scraped_obj_class', 'status', \
-                'max_items_read', 'max_items_save')
+                       'max_items_read', 'max_items_save')
         }),
         (None, {
-            'fields': ('pagination_type',)
+            'fields': ('pagination_type', 'pagination_xpath')
         }),
         ('Pagination options', {
             'classes': ('collapse',),
@@ -142,28 +145,28 @@ class ScraperAdmin(admin.ModelAdmin):
         ('Monitoring', {
             'classes': ('collapse',),
             'fields': ('last_scraper_save_alert_period', 'next_last_scraper_save_alert',
-                'last_checker_delete_alert_period', 'next_last_checker_delete_alert',)
+                       'last_checker_delete_alert_period', 'next_last_checker_delete_alert',)
         }),
         (None, {
             'fields': ('comments',)
         }),
     )
-    
+
     def rpts(self, obj):
         return str(obj.requestpagetype_set.count())
-    
+
     def checkers(self, obj):
         cnt = obj.checker_set.count()
         if cnt > 0:
             return str(cnt)
         else:
             return ""
-    
+
     def last_scraper_save_(self, obj):
         html_str = ''
         if obj.last_scraper_save:
             html_str = obj.last_scraper_save.strftime('%Y-%m-%d %H:%m')
-        
+
         if obj.last_scraper_save_alert_period != '':
             td = obj.get_last_scraper_save_alert_period_timedelta()
             if td:
@@ -171,14 +174,14 @@ class ScraperAdmin(admin.ModelAdmin):
                 if not obj.last_scraper_save or obj.last_scraper_save < datetime.datetime.now() - td:
                     html_str = '<span style="color:red;">' + html_str + '</span>'
         return html_str
-    
+
     last_scraper_save_.allow_tags = True
-    
+
     def last_checker_delete_(self, obj):
         html_str = ''
         if obj.last_checker_delete:
             html_str = obj.last_checker_delete.strftime('%Y-%m-%d %H:%m')
-        
+
         if obj.last_checker_delete_alert_period != '':
             td = obj.get_last_checker_delete_alert_period_timedelta()
             if td:
@@ -186,11 +189,11 @@ class ScraperAdmin(admin.ModelAdmin):
                 if not obj.last_checker_delete or obj.last_checker_delete < datetime.datetime.now() - td:
                     html_str = '<span style="color:red;">' + html_str + '</span>'
         return html_str
-    
+
     last_checker_delete_.allow_tags = True
-    
-    actions = ['clone_scrapers',]
-    
+
+    actions = ['clone_scrapers', ]
+
     def clone_scrapers(self, request, queryset):
         for scraper in queryset:
             scraper_elems = scraper.scraperelem_set.all()
@@ -212,14 +215,14 @@ class ScraperAdmin(admin.ModelAdmin):
                 checker.pk = None
                 checker.scraper = scraper
                 checker.save()
-        
+
         rows_updated = queryset.count()
         if rows_updated == 1:
             message_bit = "1 scraper was"
         else:
             message_bit = "{num} scrapers were".format(num=rows_updated)
         self.message_user(request, "{mb} successfully cloned.".format(mb=message_bit))
-    
+
     clone_scrapers.short_description = "Clone selected scrapers"
 
 
@@ -235,10 +238,10 @@ class LogMarkerAdmin(admin.ModelAdmin):
     search_fields = ('message_contains',)
 
 
-class LogDateFilter(SimpleListFilter):    
+class LogDateFilter(SimpleListFilter):
     title = _('date')
     parameter_name = 'date'
-    
+
     def lookups(self, request, model_admin):
         return (
             ('today', _('today')),
@@ -248,7 +251,7 @@ class LogDateFilter(SimpleListFilter):
             ('last_24_hours', _('last 24 hours')),
             ('last_week', _('last_week')),
         )
-    
+
     def queryset(self, request, queryset):
         if self.value() == 'today':
             comp_date = datetime.datetime.today()
@@ -285,14 +288,15 @@ class LogDateFilter(SimpleListFilter):
                 date__gt=comp_date
             )
 
+
 class LogAdmin(admin.ModelAdmin):
     list_display = ('message', 'ref_object', 'type', 'level', 'spider_name', 'scraper_', 'date_',)
     list_filter = (LogDateFilter, 'type', 'level', 'spider_name', 'scraper',)
-    search_fields = ['ref_object',]
+    search_fields = ['ref_object', ]
 
     def scraper_(self, instance):
         return instance.scraper.name
-    
+
     def date_(self, instance):
         return instance.date.strftime('%Y-%m-%d %H:%M')
 
