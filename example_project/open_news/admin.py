@@ -4,7 +4,7 @@ from django.contrib import admin
 from open_news.models import NewsWebsite, Article
 
 class NewsWebsiteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'url_', 'scraper')
+    list_display = ('id', 'name', 'url_', 'allowed_domain', 'scraper')
     list_display_links = ('name',)
     
     def url_(self, instance):

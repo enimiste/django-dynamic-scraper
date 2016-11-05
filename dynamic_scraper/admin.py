@@ -130,7 +130,7 @@ class ScraperAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': ('name', 'scraped_obj_class', 'status', \
-                'max_items_read', 'max_items_save')
+                'max_items_read', 'max_items_save', 'use_phantomjs')
         }),
         (None, {
             'fields': ('pagination_type', 'pagination_xpath', 'stop_on_pagination_first_level')

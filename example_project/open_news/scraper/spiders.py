@@ -4,13 +4,15 @@ from open_news.models import NewsWebsite, Article, ArticleItem
 
 
 class ArticleSpider(DjangoSpider):
-    
+
     name = 'article_spider'
 
     def __init__(self, *args, **kwargs):
         self._set_ref_object(NewsWebsite, **kwargs)
         self.scraper = self.ref_object.scraper
         self.scrape_url = self.ref_object.url
+        if len(self.ref_object.allowed_domain) > 0:
+            self.allowed_domains.append(self.ref_object.allowed_domain)
         self.scheduler_runtime = self.ref_object.scraper_runtime
         self.scraped_obj_class = Article
         self.scraped_obj_item_class = ArticleItem

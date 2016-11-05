@@ -215,6 +215,12 @@ class DjangoSpider(DjangoBaseSpider):
             kwargs['meta']['page'] = index + 1
             rpt = self.scraper.get_main_page_rpt()
             index += 1
+
+            if self.scraper.use_phantomjs:
+                kwargs['meta']['js'] = True
+            else:
+                kwargs['meta']['js'] = False
+
             if rpt.request_type == 'R':
                 yield Request(url, callback=self.parse, method=rpt.method, dont_filter=rpt.dont_filter, **kwargs)
             else:
@@ -492,6 +498,12 @@ class DjangoSpider(DjangoBaseSpider):
                             kwargs['meta']['last'] = True
                         else:
                             kwargs['meta']['last'] = False
+
+                        if self.scraper.use_phantomjs:
+                            kwargs['meta']['js'] = True
+                        else:
+                            kwargs['meta']['js'] = False
+
                         self._set_meta_splash_args()
                         # logging.info(str(kwargs))
                         if rpt.request_type == 'R':
@@ -504,19 +516,30 @@ class DjangoSpider(DjangoBaseSpider):
             else:
                 self.log("Item could not be read!", logging.ERROR)
 
-            if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '' :
-                if self.scraper.stop_on_pagination_first_level == False or (self.scraper.stop_on_pagination_first_level == True and len(self.processed_pagination_urls) == 0):
-                    self.log('Begin pagination ', logging.INFO)
-                    links = xs.xpath(self.scraper.pagination_xpath).extract()
-                    pagination_urls_to_process = set(links) - self.processed_pagination_urls
-                    self.log('%s/%s urls found to paginate' % (len(links), len(pagination_urls_to_process)), logging.INFO)
+        if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '':
+            if self.scraper.stop_on_pagination_first_level == False or (
+                    self.scraper.stop_on_pagination_first_level == True and len(
+                    self.processed_pagination_urls) == 0):
+                self.log('Begin pagination %s with xpath %s' % (
+                len(self.processed_pagination_urls), self.scraper.pagination_xpath), logging.INFO)
+                links = Selector(response).xpath(self.scraper.pagination_xpath).extract()
+                pagination_urls_to_process = set(links) - self.processed_pagination_urls
+                self.log('%s/%s urls found to paginate' % (len(links), len(pagination_urls_to_process)),
+                         logging.INFO)
+                
+                kwargs = {'meta': {}}
+                if self.scraper.use_phantomjs:
+                    kwargs['meta']['js'] = True
+                else:
+                    kwargs['meta']['js'] = False
 
-                    for link in pagination_urls_to_process:
-                        yield Request(response.urljoin(link), callback=self.parse, method='GET', dont_filter=True)
+                for link in pagination_urls_to_process:
+                    yield Request(response.urljoin(link), callback=self.parse, method='GET', dont_filter=True, **kwargs)
 
-                    self.processed_pagination_urls.update(pagination_urls_to_process)
-                    del (pagination_urls_to_process)
-                    self.log('End pagination %s urls processed at now' % len(self.processed_pagination_urls), logging.INFO)
+                self.processed_pagination_urls.update(pagination_urls_to_process)
+                del (pagination_urls_to_process)
+                self.log('End pagination %s urls processed at now' % len(self.processed_pagination_urls),
+                         logging.INFO)
 
     def _post_save_tasks(self, sender, instance, created, **kwargs):
         if instance and created:

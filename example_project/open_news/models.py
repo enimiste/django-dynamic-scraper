@@ -12,6 +12,7 @@ from dynamic_scraper.models import Scraper, SchedulerRuntime
 class NewsWebsite(models.Model):
     name = models.CharField(max_length=200)
     url = models.URLField()
+    allowed_domain = models.URLField(blank=True)
     scraper = models.ForeignKey(Scraper, blank=True, null=True, on_delete=models.SET_NULL)
     scraper_runtime = models.ForeignKey(SchedulerRuntime, blank=True, null=True, on_delete=models.SET_NULL)
     
