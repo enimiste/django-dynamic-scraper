@@ -31,6 +31,7 @@ class DjangoSpider(DjangoBaseSpider):
     tmp_non_db_results = {}
     non_db_results = {}
     processed_pagination_urls = set()
+    phantomjs_wait = 0
 
     current_output_num_mp_response_bodies = 0
     current_output_num_dp_response_bodies = 0

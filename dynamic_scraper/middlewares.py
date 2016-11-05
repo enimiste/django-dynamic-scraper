@@ -13,7 +13,7 @@ class JSMiddleware(object):
             spider.log('Using PhantomJs', logging.INFO)
             self.driver = webdriver.PhantomJS(realpath(dirname(__file__) + '/../phantomjs211/bin/phantomjs'))
             self.driver.set_window_size(1120, 550)
-            WebDriverWait(self.driver, 20).timout()  # 20 sec
+            WebDriverWait(self.driver, spider.phantomjs_wait).timout()  # 20 sec
             self.driver.get(request.url)
             body = self.driver.page_source
             return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8', request=request)

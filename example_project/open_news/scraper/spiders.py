@@ -14,6 +14,8 @@ class ProduitSoldeSpider(DjangoSpider):
         if len(self.ref_object.allowed_domain) > 0:
             self.log('Set Allowed Domaine : %s ' % self.ref_object.allowed_domain, logging.INFO)
             self.allowed_domains.append(self.ref_object.allowed_domain)
+        if self.ref_object.phantomjs_wait >= 0:
+            self.phantomjs_wait = self.ref_object.phantomjs_wait
         self.scheduler_runtime = self.ref_object.scraper_runtime
         self.scraped_obj_class = ProduitSolde
         self.scraped_obj_item_class = ProduitSoldeItem
