@@ -504,18 +504,19 @@ class DjangoSpider(DjangoBaseSpider):
             else:
                 self.log("Item could not be read!", logging.ERROR)
 
-            if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '':
-                self.log('Begin pagination ', logging.INFO)
-                links = xs.xpath(self.scraper.pagination_xpath).extract()
-                pagination_urls_to_process = set(links) - self.processed_pagination_urls
-                self.log('%s/%s urls found to paginate' % (len(links), len(pagination_urls_to_process)), logging.INFO)
+            if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '' :
+                if self.scraper.stop_on_pagination_first_level == False or (self.scraper.stop_on_pagination_first_level == True and len(self.processed_pagination_urls) == 0):
+                    self.log('Begin pagination ', logging.INFO)
+                    links = xs.xpath(self.scraper.pagination_xpath).extract()
+                    pagination_urls_to_process = set(links) - self.processed_pagination_urls
+                    self.log('%s/%s urls found to paginate' % (len(links), len(pagination_urls_to_process)), logging.INFO)
 
-                for link in pagination_urls_to_process:
-                    yield Request(response.urljoin(link), callback=self.parse, method='GET', dont_filter=True)
+                    for link in pagination_urls_to_process:
+                        yield Request(response.urljoin(link), callback=self.parse, method='GET', dont_filter=True)
 
-                self.processed_pagination_urls.update(pagination_urls_to_process)
-                del (pagination_urls_to_process)
-                self.log('End pagination %s urls processed at now' % len(self.processed_pagination_urls), logging.INFO)
+                    self.processed_pagination_urls.update(pagination_urls_to_process)
+                    del (pagination_urls_to_process)
+                    self.log('End pagination %s urls processed at now' % len(self.processed_pagination_urls), logging.INFO)
 
     def _post_save_tasks(self, sender, instance, created, **kwargs):
         if instance and created:
