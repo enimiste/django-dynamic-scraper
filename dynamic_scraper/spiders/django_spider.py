@@ -30,7 +30,7 @@ class DjangoSpider(DjangoBaseSpider):
     dp_form_data = {}
     tmp_non_db_results = {}
     non_db_results = {}
-    processed_pagination_urls = []
+    processed_pagination_urls = set()
 
     current_output_num_mp_response_bodies = 0
     current_output_num_dp_response_bodies = 0
@@ -189,7 +189,7 @@ class DjangoSpider(DjangoBaseSpider):
                 self.start_urls.insert(0, scrape_url)
                 self.pages.insert(0, "")
 
-        if self.scraper.pagination_type == 'N':
+        if self.scraper.pagination_type in ['N', 'X']:
             self.start_urls.append(scrape_url)
             self.pages = ["", ]
 
@@ -440,9 +440,10 @@ class DjangoSpider(DjangoBaseSpider):
         for obj in base_objects:
             item_num = self.items_read_count + 1
             self.tmp_non_db_results[item_num] = {}
-            self.log("Starting to crawl item {i} from page {p}.".format(i=str(item_num),
-                                                                        p=str(response.request.meta['page'])),
-                     logging.INFO)
+            if 'page' in response.request.meta:
+                self.log("Starting to crawl item {i} from page {p}.".format(i=str(item_num),
+                                                                            p=str(response.request.meta['page'])),
+                         logging.INFO)
             item = self.parse_item(response, obj, 'MP', item_num)
             # print item
 
@@ -504,12 +505,17 @@ class DjangoSpider(DjangoBaseSpider):
                 self.log("Item could not be read!", logging.ERROR)
 
             if self.scraper.pagination_type == 'X' and self.scraper.pagination_xpath != '':
+                self.log('Begin pagination ', logging.INFO)
                 links = xs.xpath(self.scraper.pagination_xpath).extract()
-                for link in ( l for l in links if l not in self.processed_pagination_urls):
-                    self.processed_pagination_urls.append(link)
-                    link = response.urljoin(link)
-                    self.log("Pagination [%s] ==> Next link to follow : %s" % (self.processed_pagination_urls.count(), link), logging.INFO)
-                    yield Request(response.urljoin(link), callback=self.parse_item, method='GET', dont_filter=False)
+                pagination_urls_to_process = set(links) - self.processed_pagination_urls
+                self.log('%s/%s urls found to paginate' % (len(links), len(pagination_urls_to_process)), logging.INFO)
+
+                for link in pagination_urls_to_process:
+                    yield Request(response.urljoin(link), callback=self.parse, method='GET', dont_filter=True)
+
+                self.processed_pagination_urls.update(pagination_urls_to_process)
+                del (pagination_urls_to_process)
+                self.log('End pagination %s urls processed at now' % len(self.processed_pagination_urls), logging.INFO)
 
     def _post_save_tasks(self, sender, instance, created, **kwargs):
         if instance and created:
