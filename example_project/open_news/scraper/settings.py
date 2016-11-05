@@ -46,3 +46,6 @@ DOWNLOADER_MIDDLEWARES = {
     'dynamic_scraper.middlewares.JSMiddleware': 99
 }
 #CLOSESPIDER_TIMEOUT = 21600
+
+ROBOTSTXT_ENABLED = True
+ROBOTSTXT_OBEY = True
