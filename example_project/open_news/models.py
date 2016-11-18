@@ -12,6 +12,7 @@ from dynamic_scraper.models import Scraper, SchedulerRuntime
 class NewsWebsite(models.Model):
     name = models.CharField(max_length=200)
     url = models.URLField()
+    uuid_site_marchand = models.CharField(max_length=255)
     allowed_domain = models.CharField(blank=True, max_length=200, help_text='A domaine name without http:// or https://')
     phantomjs_wait = models.IntegerField(default=0, help_text='Timout in seconds to wait by PhantomJs. Used only if PhantomJs is actived on the scraper')
     scraper = models.ForeignKey(Scraper, blank=True, null=True, on_delete=models.SET_NULL)
